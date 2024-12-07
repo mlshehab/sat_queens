@@ -58,4 +58,4 @@ Then, we add all the constraints from the problem description as boolean constai
 
 ![queens 220 sat](./md_images/queens_220_sat.png)
 
-We also add boolean constraints to find if there are additional solutions. Essentially every time the solver converges to a solution, we add a boolean constaint that the new boolean variable assignments cannot all match all the ones in a previous solution.  It turns out that this is the unique solution!
+We also add boolean constraints to find if there are additional solutions. Essentially every time the solver converges to a solution, we add a boolean constaint that the new boolean variable assignments cannot match all the ones in a previous solution.  It turns out that this is the unique solution!
