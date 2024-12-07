@@ -17,4 +17,5 @@ For example, this is the visualization of the solution of Queens 220:
 # Methodology
 
 The code takes in as input an snapshot of the empty board. For our running example, it is the figure ```./queens_snapshots/queens_220.png```,  shown below.
-![queens 220 empty](./queens_snapshots/queens_220.png){ width=300px }
+
+![queens 220 empty](./md_images/queens_220_plain.png)
