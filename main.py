@@ -74,9 +74,9 @@ for row in grid_centers:
 # for color, symbol in color_definitions.items():
 #     print(f"{symbol}: {color}")
 
-# print("\nColor Matrix:")
-# for row in color_matrix:
-#     print(row)
+print("\nColor Matrix:")
+for row in color_matrix:
+    print(row)
 
 
 def ExactlyOne(vars):
