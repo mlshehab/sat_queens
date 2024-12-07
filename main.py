@@ -4,12 +4,12 @@ import matplotlib.image as mpimg
 from PIL import Image
 from z3 import Solver, Bool, Sum , And, Or, AtMost, sat, Implies, Not# type: ignore
 
-# Function to compute the difference between two colors
+# heuristic difference between two colors
 def color_difference(color1, color2):
     return sum(abs(c1 - c2) for c1, c2 in zip(color1, color2))
 
-# Function to merge similar colors
-def merge_colors(colors, threshold=10):
+# merge similar colors based on the heuristic distance above
+def merge_colors(colors, threshold=20):
     merged_colors = []
     color_map = {}
     
@@ -27,13 +27,14 @@ def merge_colors(colors, threshold=10):
     return merged_colors, color_map
 
 
-input_image_path = './queens_snapshots/queens_220.png'
+input_image_path = './queens_snapshots/queens_221.png'
 
 # Load the image
 image = Image.open(input_image_path)
 
 # Grid size and image dimensions
-grid_size = 10
+# TODO: automate the computation of the grid_size
+grid_size = 8
 image_width, image_height = image.size
 cell_width = image_width // grid_size
 cell_height = image_height // grid_size
@@ -59,20 +60,20 @@ for row in range(grid_size):
 # Merge similar colors
 merged_colors, color_map = merge_colors(unique_colors)
 
+# # Print the 10x10 matrix
+# for row in grid_centers:
+#     print(row)
+
+# print("The merged colors are: ", merged_colors)
 # Map merged colors to symbolic names dynamically (c1 to cN)
 color_definitions = {color: f"c{i+1}" for i, color in enumerate(merged_colors)}
 
-# Generate the 10x10 symbolic matrix
 color_matrix = []
 
 for row in grid_centers:
     symbolic_row = [color_definitions[color_map[color]] for color in row]
     color_matrix.append(symbolic_row)
 
-# Print the dynamically created color definitions and the matrix
-# print("Color Definitions (Merged):")
-# for color, symbol in color_definitions.items():
-#     print(f"{symbol}: {color}")
 
 print("\nColor Matrix:")
 for row in color_matrix:
@@ -89,18 +90,18 @@ def ExactlyOne(vars):
     return And(at_least_one, at_most_one)
 
 # Define the 10x10 grid of Boolean variables
-grid = [[Bool("x_%s_%s"%(i,j)) for j in range(10)] for i in range(10)]
+grid = [[Bool("x_%s_%s"%(i,j)) for j in range(grid_size)] for i in range(grid_size)]
 # print(f"grid is {grid}")
 # Z3 Solver
 solver = Solver()
 solver.reset()
 # Constraint 1: Each row must have exactly one cell with value 1
-for i in range(10):
+for i in range(grid_size):
     solver.add(ExactlyOne(grid[i]))
 
 # Constraint 2: Each column must have exactly one cell with value 1
-for j in range(10):
-    solver.add(ExactlyOne([grid[i][j] for i in range(10)]))
+for j in range(grid_size):
+    solver.add(ExactlyOne([grid[i][j] for i in range(grid_size)]))
 
 # Example color definitions and grid matrix (replace this with your actual color data)
 # Assuming color_matrix contains color symbols like ['c1', 'c2', ..., 'c10'] as rows of strings
@@ -108,8 +109,8 @@ for j in range(10):
 
 # # Group cells by color
 color_groups = {}
-for i in range(10):
-    for j in range(10):
+for i in range(grid_size):
+    for j in range(grid_size):
         color = color_matrix[i][j]
         if color not in color_groups:
             color_groups[color] = []
@@ -131,13 +132,13 @@ def neighbors(i, j):
     neighbors_list = []
     for di, dj in directions:
         ni, nj = i + di, j + dj
-        if 0 <= ni < 10 and 0 <= nj < 10:  # Ensure neighbor is within bounds
+        if 0 <= ni < grid_size and 0 <= nj < grid_size:  # Ensure neighbor is within bounds
             neighbors_list.append(grid[ni][nj])
     return neighbors_list
 
 # Add constraints for all cells
-for i in range(10):
-    for j in range(10):
+for i in range(grid_size):
+    for j in range(grid_size):
         # If grid[i][j] is True, all its neighbors must be False
         solver.add(Or(Not(grid[i][j]), And([Not(neighbor) for neighbor in neighbors(i, j)])))
 
@@ -147,8 +148,8 @@ while True:
     if solver.check() == sat:
         model = solver.model()
         solution = [
-            ['1' if model.evaluate(grid[i][j]) else '0' for j in range(10)]
-            for i in range(10)
+            ['1' if model.evaluate(grid[i][j]) else '0' for j in range(grid_size)]
+            for i in range(grid_size)
         ]
         
         # Save the solution into a matrix variable
@@ -160,8 +161,8 @@ while True:
 
         block_clause = []
 
-        for i in range(10):
-            for j in range(10):
+        for i in range(grid_size):
+            for j in range(grid_size):
                 # For boolean variables, B[ap][i][j], add the constraint that the current solution
                 # is not equal to the previous solution
                 block_clause.append(grid[i][j] != model.evaluate(grid[i][j], model_completion=True))
@@ -176,9 +177,9 @@ input_image = mpimg.imread(input_image_path)
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(8, 8))
-ax.imshow(input_image, extent=(0, 10, 0, 10))  # Align grid with image coordinates
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 10)
+ax.imshow(input_image, extent=(0, grid_size, 0, grid_size))  # Align grid with image coordinates
+ax.set_xlim(0, grid_size)
+ax.set_ylim(0, grid_size)
 
 # Overlay simple circles to represent chess pieces
 for i in range(len(matrix)):
@@ -192,8 +193,8 @@ for i in range(len(matrix)):
             ax.add_artist(circle)
 
 # Customize gridlines for better visualization
-ax.set_xticks(np.arange(0, 11, 1))
-ax.set_yticks(np.arange(0, 11, 1))
+ax.set_xticks(np.arange(0, grid_size+1, 1))
+ax.set_yticks(np.arange(0, grid_size+1, 1))
 ax.grid(color='black', linestyle='--', linewidth=0.5)
 
 plt.show()
