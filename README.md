@@ -9,3 +9,12 @@ The game is a 10 by 10 grid, and the goal is place queens over the grid such tha
 3. Each column has exactly one queen.
 4. No two queens can be neighbors. 
 
+For example, this is the visualization of the solution of Queens 220:
+
+![queens 220 solution](./md_images/queens_220_solved.png)
+
+
+# Methodology
+
+The code takes in as input an snapshot of the empty board. For our running example, it is the figure ```./queens_snapshots/queens_220.png```,  shown below.
+![queens 220 empty](./queens_snapshots/queens_220.png){ width=300px }
