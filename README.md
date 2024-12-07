@@ -13,10 +13,18 @@ For example, this is the visualization of the solution of Queens 220:
 
 ![queens 220 solution](./md_images/queens_220_solved.png)
 
-
+# Requirements
+To be able to run the code, ensure Python 3.7 or higher is installed on your system. You'll need to install the following:
+```
+pip install numpy, matplotlib, pillow, z3-solver
+```
+Then, run the main script in your preferred Python environment:
+```
+python main.py
+```
 # How It Works?
 
-The code takes in as input an snapshot of the empty board. For our running example, it is the figure ```./queens_snapshots/queens_220.png```, shown below. 
+The code takes in as input an snapshot of the empty board. For our running example, it is the [figure](./queens_snapshots/queens_220.png) shown below. 
 
 ![queens 220 empty](./md_images/queens_220_plain.png)
 
@@ -50,4 +58,4 @@ Then, we add all the constraints from the problem description as boolean constai
 
 ![queens 220 sat](./md_images/queens_220_sat.png)
 
-We also add a condition to find if there are additional solutions. It turns out that this is the unique solution!
+We also add boolean constraints to find if there are additional solutions. Essentially every time the solver converges to a solution, we add a boolean constaint that the new boolean variable assignments cannot all match all the ones in a previous solution.  It turns out that this is the unique solution!

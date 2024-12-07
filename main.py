@@ -3,28 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
 from z3 import Solver, Bool, Sum , And, Or, AtMost, sat, Implies, Not# type: ignore
-
-# heuristic difference between two colors
-def color_difference(color1, color2):
-    return sum(abs(c1 - c2) for c1, c2 in zip(color1, color2))
-
-# merge similar colors based on the heuristic distance above
-def merge_colors(colors, threshold=20):
-    merged_colors = []
-    color_map = {}
-    
-    for color in colors:
-        # Check if the color is close to any already merged color
-        for merged_color in merged_colors:
-            if color_difference(color, merged_color) < threshold:
-                color_map[color] = merged_color
-                break
-        else:
-            # If no close color is found, add it as a new merged color
-            merged_colors.append(color)
-            color_map[color] = color
-
-    return merged_colors, color_map
+from utils import *
 
 
 input_image_path = './queens_snapshots/queens_221.png'
@@ -34,13 +13,15 @@ image = Image.open(input_image_path)
 
 # Grid size and image dimensions
 # TODO: automate the computation of the grid_size
+
 grid_size = 8
 image_width, image_height = image.size
 cell_width = image_width // grid_size
 cell_height = image_height // grid_size
 
-# Extract colors from the centers of grid cells
+
 unique_colors = set()
+# this will be just a place holder to construct the color matrix later
 grid_centers = []
 
 for row in range(grid_size):
@@ -58,40 +39,23 @@ for row in range(grid_size):
     grid_centers.append(row_centers)
 
 # Merge similar colors
-merged_colors, color_map = merge_colors(unique_colors)
+merged_colors = merge_colors(unique_colors)
 
-# # Print the 10x10 matrix
-# for row in grid_centers:
-#     print(row)
-
-# print("The merged colors are: ", merged_colors)
-# Map merged colors to symbolic names dynamically (c1 to cN)
 color_definitions = {color: f"c{i+1}" for i, color in enumerate(merged_colors)}
 
 color_matrix = []
 
 for row in grid_centers:
-    symbolic_row = [color_definitions[color_map[color]] for color in row]
+    symbolic_row = [color_definitions[color] for color in row]
     color_matrix.append(symbolic_row)
-
 
 print("\nColor Matrix:")
 for row in color_matrix:
     print(row)
 
-
-def ExactlyOne(vars):
-    """Ensure exactly one of the variables in the list is True."""
-    # At least one must be True
-    at_least_one = Or(vars)
-    # At most one must be True
-    at_most_one = AtMost(*vars, 1)
-    # Both conditions must be satisfied
-    return And(at_least_one, at_most_one)
-
 # Define the 10x10 grid of Boolean variables
 grid = [[Bool("x_%s_%s"%(i,j)) for j in range(grid_size)] for i in range(grid_size)]
-# print(f"grid is {grid}")
+
 # Z3 Solver
 solver = Solver()
 solver.reset()
@@ -103,11 +67,7 @@ for i in range(grid_size):
 for j in range(grid_size):
     solver.add(ExactlyOne([grid[i][j] for i in range(grid_size)]))
 
-# Example color definitions and grid matrix (replace this with your actual color data)
-# Assuming color_matrix contains color symbols like ['c1', 'c2', ..., 'c10'] as rows of strings
-
-
-# # Group cells by color
+# Group cells by color
 color_groups = {}
 for i in range(grid_size):
     for j in range(grid_size):
@@ -120,29 +80,14 @@ for i in range(grid_size):
 for color, cells in color_groups.items():
     solver.add(ExactlyOne(cells))
 
-
 # Constraint 4: No neighboring cells (including diagonals) can both be True
-def neighbors(i, j):
-    """Get the list of neighbors (including diagonals) for cell (i, j)."""
-    directions = [
-        (-1, -1), (-1, 0), (-1, 1),  # Top-left, Top, Top-right
-        (0, -1),          (0, 1),   # Left, Right
-        (1, -1), (1, 0), (1, 1)     # Bottom-left, Bottom, Bottom-right
-    ]
-    neighbors_list = []
-    for di, dj in directions:
-        ni, nj = i + di, j + dj
-        if 0 <= ni < grid_size and 0 <= nj < grid_size:  # Ensure neighbor is within bounds
-            neighbors_list.append(grid[ni][nj])
-    return neighbors_list
-
-# Add constraints for all cells
 for i in range(grid_size):
     for j in range(grid_size):
         # If grid[i][j] is True, all its neighbors must be False
-        solver.add(Or(Not(grid[i][j]), And([Not(neighbor) for neighbor in neighbors(i, j)])))
+        solver.add(Or(Not(grid[i][j]), And([Not(neighbor) for neighbor in neighbors(i, j,grid_size,grid)])))
 
 
+# Check all possible solutions
 while True:
 
     if solver.check() == sat:
@@ -155,7 +100,7 @@ while True:
         # Save the solution into a matrix variable
         matrix = solution
 
-        print("Solution saved into matrix:")
+        print("\nSolution saved into matrix:")
         for row in matrix:
             print(row)
 
@@ -170,7 +115,7 @@ while True:
         # Add the blocking clause to the solver
         solver.add(Or(block_clause))
     else:
-        print("No more solution exists.")
+        print("\nNo more solution exists.")
         break 
 
 input_image = mpimg.imread(input_image_path)
