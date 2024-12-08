@@ -85,8 +85,7 @@ for color, cells in color_groups.items():
 for i in range(grid_size):
     for j in range(grid_size):
         # If grid[i][j] is True, all its neighbors must be False
-        solver.add(Or(Not(grid[i][j]), And([Not(neighbor) for neighbor in neighbors(i, j,grid_size,grid)])))
-
+        solver.add(Implies(grid[i][j],And([Not(neighbor) for neighbor in neighbors(i, j,grid_size,grid)]) ))
 
 # Check all possible solutions
 while True:
