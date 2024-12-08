@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
-from z3 import Solver, Bool, Sum , And, Or, AtMost, sat, Implies, Not# type: ignore
+from z3 import Solver, Bool, Sum , And, Or, AtMost, sat, Implies, Not # type: ignore
 from utils import *
 
 
@@ -38,15 +38,16 @@ for row in range(grid_size):
 
     grid_centers.append(row_centers)
 
+print(f"grid centers are: {grid_centers}")
 # Merge similar colors
-merged_colors = merge_colors(unique_colors)
+merged_colors, color_lookup = merge_colors(unique_colors)
 
 color_definitions = {color: f"c{i+1}" for i, color in enumerate(merged_colors)}
 
 color_matrix = []
 
 for row in grid_centers:
-    symbolic_row = [color_definitions[color] for color in row]
+    symbolic_row = [color_definitions[color_lookup[color]] for color in row]
     color_matrix.append(symbolic_row)
 
 print("\nColor Matrix:")

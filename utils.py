@@ -5,16 +5,24 @@ def color_difference(color1, color2):
     return sum(abs(c1 - c2) for c1, c2 in zip(color1, color2))
 
 # merge similar colors based on the heuristic distance above
-def merge_colors(colors, threshold=20):
+
+# Function to merge similar colors
+def merge_colors(colors, threshold=10):
     merged_colors = []
+    color_lookup = {}
+    
     for color in colors:
+        # Check if the color is close to any already merged color
         for merged_color in merged_colors:
             if color_difference(color, merged_color) < threshold:
+                color_lookup[color] = merged_color
                 break
         else:
+            # If no close color is found, add it as a new merged color
             merged_colors.append(color)
+            color_lookup[color] = color
 
-    return merged_colors
+    return merged_colors, color_lookup
 
 
 def ExactlyOne(vars):
