@@ -6,7 +6,7 @@ from z3 import Solver, Bool, Sum , And, Or, AtMost, sat, Implies, Not # type: ig
 from utils import *
 
 
-input_image_path = './queens_snapshots/queens_221.png'
+input_image_path = './queens_snapshots/queens_222.png'
 
 # Load the image
 image = Image.open(input_image_path)
@@ -14,7 +14,7 @@ image = Image.open(input_image_path)
 # Grid size and image dimensions
 # TODO: automate the computation of the grid_size
 
-grid_size = 8
+grid_size = 9
 image_width, image_height = image.size
 cell_width = image_width // grid_size
 cell_height = image_height // grid_size
