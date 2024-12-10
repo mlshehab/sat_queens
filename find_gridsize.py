@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Load the image
-image_path = './queens_snapshots/queens_223.png'
+image_path = './queens_snapshots/queens_222.png'
 image = cv2.imread(image_path)
 
 # Convert to grayscale
